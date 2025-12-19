@@ -4,33 +4,97 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Notas de clase (PDF)</title>
+
   <style>
+    :root{
+      --accent: #d6e4ff;     /* fallback */
+      --accent-bg: #f1f5ff;  /* fallback */
+    }
+
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; }
-    header { padding: 18px 22px; border-bottom: 1px solid #eee; position: sticky; top: 0; background: white; z-index: 10; }
+
+    header {
+      padding: 18px 22px;
+      border-bottom: 1px solid #eee;
+      position: sticky; top: 0;
+      background: white;
+      z-index: 10;
+    }
+
     .wrap { display: grid; grid-template-columns: 340px 1fr; min-height: calc(100vh - 74px); }
+
     nav { border-right: 1px solid #eee; padding: 14px; overflow: auto; }
+
     nav a {
-      display: block; padding: 10px 10px; border-radius: 10px;
-      text-decoration: none; color: #111; margin-bottom: 6px;
+      display: block;
+      padding: 10px 10px;
+      border-radius: 12px;
+      text-decoration: none;
+      color: #111;
+      margin-bottom: 8px;
       border: 1px solid transparent;
+      position: relative;
+      transition: background .15s ease, border-color .15s ease, transform .05s ease;
     }
     nav a:hover { background: #f6f6f6; }
-    nav a.active { background: #f1f5ff; border-color: #d6e4ff; }
+    nav a:active { transform: translateY(1px); }
+
+    /* ✅ Activo (usa variables --accent y --accent-bg definidas por materia) */
+    nav a.active {
+      background: var(--accent-bg);
+      border-color: var(--accent);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+    }
+    nav a.active::before{
+      content:"";
+      position:absolute;
+      left: 8px;
+      top: 8px;
+      bottom: 8px;
+      width: 6px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+    nav a span.title{
+      display:block;
+      padding-left: 16px; /* para que no choque con la barrita */
+    }
+
     main { padding: 14px; }
+
     .bar { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+
     .btn {
-      display: inline-block; padding: 10px 12px; border-radius: 12px;
-      border: 1px solid #ddd; text-decoration: none; color: #111;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+      text-decoration: none;
+      color: #111;
       background: white;
     }
     .btn:hover { background: #f6f6f6; }
+    .btn .dot{
+      width: 10px; height: 10px; border-radius: 999px; background: var(--accent);
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+
     iframe { width: 100%; height: calc(100vh - 180px); border: 1px solid #eee; border-radius: 14px; }
+
     .muted { color: #666; font-size: 14px; }
+
     .pill {
-      display: inline-block; font-size: 12px; color: #444;
-      padding: 4px 10px; border: 1px solid #eee; border-radius: 999px;
+      display: inline-block;
+      font-size: 12px;
+      color: #444;
+      padding: 4px 10px;
+      border: 1px solid #eee;
+      border-radius: 999px;
       background: #fafafa;
     }
+
     @media (max-width: 900px) {
       .wrap { grid-template-columns: 1fr; }
       nav { border-right: none; border-bottom: 1px solid #eee; }
@@ -38,8 +102,9 @@
     }
   </style>
 </head>
+
 <body>
-  <header>
+  <header id="header">
     <div style="font-weight:800; font-size: 18px;">📚 Notas de clase</div>
     <div class="muted">
       Ver en línea y descargar PDFs.
@@ -52,7 +117,10 @@
 
     <main>
       <div class="bar">
-        <a id="open" class="btn" href="#" target="_blank" rel="noopener"> Abrir en nueva pestaña</a>
+        <a id="open" class="btn" href="#" target="_blank" rel="noopener">
+          <span class="dot" aria-hidden="true"></span>
+          Abrir en nueva pestaña
+        </a>
         <span id="label" class="muted"></span>
       </div>
 
@@ -65,27 +133,36 @@
   </div>
 
   <script>
-    // ✅ Ajustado a tus nombres EXACTOS (con tildes y guiones bajos)
-    // Asegúrate de que estos PDFs estén dentro de la carpeta /pdfs en el repo.
-    const PDFS = [
-  { slug: "control-produccion", title: "Control de Producción", file: "pdfs/Control_de_Producción.pdf" },
-  { slug: "logistica", title: "Logística", file: "pdfs/Logística.pdf" },
-  { slug: "modelos-prob-1", title: "Modelos Probabilísticos — Primer Corte", file: "pdfs/Notas_Modelos_Probabilísticos_Primer_Corte.pdf" },
-  { slug: "simulacion-eventos", title: "Simulación de Eventos Discretos", file: "pdfs/Simulación_de_Eventos_Discretos.pdf" },
-];
+    // 🎨 Paleta por materia
+    // Puedes cambiar los hex si quieres un tono específico.
+    const COLORS = {
+      control:   { accent: "#ff8a3d", bg: "#fff1e7" }, // naranja
+      logistica: { accent: "#f4c430", bg: "#fff8d8" }, // amarillo
+      modelos:   { accent: "#3b82f6", bg: "#eaf2ff" }, // azul
+      simu:      { accent: "#ec4899", bg: "#ffe4f1" }, // rosado
+    };
 
-    // 🚧 Luego lo cambiaremos por tu Worker real (para notificación por descarga).
-    // Por ahora puedes dejarlo así: el botón Descargar abrirá el PDF directo (sin tracking).
-    const WORKER_BASE = ""; // ejemplo futuro: "https://TU_WORKER_SUBDOMINIO.workers.dev/d/";
+    // ✅ Tus PDFs + su materia (key)
+    const PDFS = [
+      { slug: "control-produccion", title: "Control de Producción", materia: "control", file: "pdfs/Control_de_Producción.pdf" },
+      { slug: "logistica", title: "Logística", materia: "logistica", file: "pdfs/Logística.pdf" },
+      { slug: "modelos-prob-1", title: "Modelos Probabilísticos — Primer Corte", materia: "modelos", file: "pdfs/Notas_Modelos_Probabilísticos_Primer_Corte.pdf" },
+      { slug: "simulacion-eventos", title: "Simulación de Eventos Discretos", materia: "simu", file: "pdfs/Simulación_de_Eventos_Discretos.pdf" },
+    ];
 
     const list = document.getElementById("list");
     const viewer = document.getElementById("viewer");
-    const download = document.getElementById("download");
     const open = document.getElementById("open");
     const label = document.getElementById("label");
     const count = document.getElementById("count");
 
     count.textContent = `${PDFS.length} PDFs`;
+
+    function applyTheme(materiaKey){
+      const c = COLORS[materiaKey] || { accent: "#d6e4ff", bg: "#f1f5ff" };
+      document.documentElement.style.setProperty("--accent", c.accent);
+      document.documentElement.style.setProperty("--accent-bg", c.bg);
+    }
 
     function setActive(slug) {
       list.querySelectorAll("a").forEach(a => {
@@ -94,21 +171,20 @@
     }
 
     function select(pdf) {
+      applyTheme(pdf.materia);
       viewer.src = pdf.file;
       open.href = pdf.file;
-
-      // Si WORKER_BASE está vacío, descarga directa. Si no, descarga trackeada.
-      download.href = WORKER_BASE ? (WORKER_BASE + pdf.slug) : pdf.file;
-
       label.textContent = pdf.title;
       history.replaceState(null, "", "#" + pdf.slug);
       setActive(pdf.slug);
     }
 
     function renderList() {
-      list.innerHTML = PDFS.map(p =>
-        `<a href="#${p.slug}" data-slug="${p.slug}">${p.title}</a>`
-      ).join("");
+      list.innerHTML = PDFS.map(p => {
+        return `<a href="#${p.slug}" data-slug="${p.slug}">
+                  <span class="title">${p.title}</span>
+                </a>`;
+      }).join("");
 
       list.querySelectorAll("a").forEach(a => {
         a.addEventListener("click", (e) => {
