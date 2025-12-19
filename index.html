@@ -1,6 +1,5 @@
 <!doctype html>
 <html lang="es">
-  <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c418a68a49b34c9684dc070e5178fc76"}'></script><!-- End Cloudflare Web Analytics -->
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -40,7 +39,7 @@
     nav a:hover { background: #f6f6f6; }
     nav a:active { transform: translateY(1px); }
 
-    /* ✅ Activo (usa variables --accent y --accent-bg definidas por materia) */
+    /* Activo (usa variables --accent y --accent-bg definidas por materia) */
     nav a.active {
       background: var(--accent-bg);
       border-color: var(--accent);
@@ -58,7 +57,7 @@
     }
     nav a span.title{
       display:block;
-      padding-left: 16px; /* para que no choque con la barrita */
+      padding-left: 16px;
     }
 
     main { padding: 14px; }
@@ -105,7 +104,7 @@
 </head>
 
 <body>
-  <header id="header">
+  <header>
     <div style="font-weight:800; font-size: 18px;">📚 Notas de clase</div>
     <div class="muted">
       Ver en línea y descargar PDFs.
@@ -135,7 +134,6 @@
 
   <script>
     // 🎨 Paleta por materia
-    // Puedes cambiar los hex si quieres un tono específico.
     const COLORS = {
       control:   { accent: "#ff8a3d", bg: "#fff1e7" }, // naranja
       logistica: { accent: "#f4c430", bg: "#fff8d8" }, // amarillo
@@ -143,13 +141,19 @@
       simu:      { accent: "#ec4899", bg: "#ffe4f1" }, // rosado
     };
 
-    // ✅ Tus PDFs + su materia (key)
+    // ✅ PDFs (ya renombrados)
     const PDFS = [
-      { slug: "control-produccion", title: "Control de Producción", materia: "control", file: "pdfs/Control_de_Producción.pdf" },
-      { slug: "logistica", title: "Logística", materia: "logistica", file: "pdfs/Logística.pdf" },
-      { slug: "modelos-prob-1", title: "Modelos Probabilísticos — Primer Corte", materia: "modelos", file: "pdfs/Notas_Modelos_Probabilísticos_Primer_Corte.pdf" },
-      { slug: "simulacion-eventos", title: "Simulación de Eventos Discretos", materia: "simu", file: "pdfs/Simulación_de_Eventos_Discretos.pdf" },
+      { slug: "control-produccion", title: "Control de Producción", materia: "control",  file: "./pdfs/control_de_produccion.pdf" },
+      { slug: "logistica",          title: "Logística",             materia: "logistica",file: "./pdfs/logistica.pdf" },
+      { slug: "modelos-prob-1",     title: "Modelos Probabilísticos — Primer Corte", materia: "modelos", file: "./pdfs/notas_modelos_probabilisticos_primer_corte.pdf" },
+      { slug: "simulacion-eventos", title: "Simulación de Eventos Discretos", materia: "simu", file: "./pdfs/simulacion_de_eventos_discretos.pdf" },
     ];
+
+    // ✅ TRACKING por PDF (Worker)
+    // 1) Mientras NO tengas Worker, déjalo vacío y el botón abrirá el PDF directo.
+    // 2) Cuando crees el Worker, pega aquí la base, ej:
+    //    const TRACK_BASE = "https://notas-tracker.tuusuario.workers.dev";
+    const TRACK_BASE = "";
 
     const list = document.getElementById("list");
     const viewer = document.getElementById("viewer");
@@ -173,8 +177,15 @@
 
     function select(pdf) {
       applyTheme(pdf.materia);
+
+      // visor (no trackeado)
       viewer.src = pdf.file;
-      open.href = pdf.file;
+
+      // botón (trackeado si hay Worker)
+      open.href = TRACK_BASE
+        ? `${TRACK_BASE}/d/${pdf.slug}?a=open`
+        : pdf.file;
+
       label.textContent = pdf.title;
       history.replaceState(null, "", "#" + pdf.slug);
       setActive(pdf.slug);
@@ -203,5 +214,10 @@
     const initial = PDFS.find(x => x.slug === initialSlug) || PDFS[0];
     select(initial);
   </script>
+
+  <!-- Cloudflare Web Analytics -->
+  <script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+    data-cf-beacon='{"token":"c418a68a49b34c9684dc070e5178fc76"}'></script>
+  <!-- End Cloudflare Web Analytics -->
 </body>
 </html>
