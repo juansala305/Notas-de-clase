@@ -3,20 +3,34 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Notas (PDF)</title>
+  <title>Notas de clase (PDF)</title>
   <style>
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; }
-    header { padding: 18px 22px; border-bottom: 1px solid #eee; position: sticky; top: 0; background: white; }
-    .wrap { display: grid; grid-template-columns: 320px 1fr; gap: 0; min-height: calc(100vh - 60px); }
+    header { padding: 18px 22px; border-bottom: 1px solid #eee; position: sticky; top: 0; background: white; z-index: 10; }
+    .wrap { display: grid; grid-template-columns: 340px 1fr; min-height: calc(100vh - 74px); }
     nav { border-right: 1px solid #eee; padding: 14px; overflow: auto; }
-    nav a { display: block; padding: 10px 10px; border-radius: 10px; text-decoration: none; color: #111; }
+    nav a {
+      display: block; padding: 10px 10px; border-radius: 10px;
+      text-decoration: none; color: #111; margin-bottom: 6px;
+      border: 1px solid transparent;
+    }
     nav a:hover { background: #f6f6f6; }
+    nav a.active { background: #f1f5ff; border-color: #d6e4ff; }
     main { padding: 14px; }
     .bar { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
-    .btn { display: inline-block; padding: 10px 12px; border-radius: 12px; border: 1px solid #ddd; text-decoration: none; color: #111; }
+    .btn {
+      display: inline-block; padding: 10px 12px; border-radius: 12px;
+      border: 1px solid #ddd; text-decoration: none; color: #111;
+      background: white;
+    }
     .btn:hover { background: #f6f6f6; }
-    iframe { width: 100%; height: calc(100vh - 160px); border: 1px solid #eee; border-radius: 14px; }
+    iframe { width: 100%; height: calc(100vh - 180px); border: 1px solid #eee; border-radius: 14px; }
     .muted { color: #666; font-size: 14px; }
+    .pill {
+      display: inline-block; font-size: 12px; color: #444;
+      padding: 4px 10px; border: 1px solid #eee; border-radius: 999px;
+      background: #fafafa;
+    }
     @media (max-width: 900px) {
       .wrap { grid-template-columns: 1fr; }
       nav { border-right: none; border-bottom: 1px solid #eee; }
@@ -26,8 +40,11 @@
 </head>
 <body>
   <header>
-    <div style="font-weight:700;">📚 Notas (PDF)</div>
-    <div class="muted">Ver en línea y descargar.</div>
+    <div style="font-weight:800; font-size: 18px;">📚 Notas de clase</div>
+    <div class="muted">
+      Ver en línea y descargar PDFs.
+      <span class="pill" id="count"></span>
+    </div>
   </header>
 
   <div class="wrap">
@@ -39,35 +56,61 @@
         <a id="open" class="btn" href="#" target="_blank" rel="noopener">🔗 Abrir en nueva pestaña</a>
         <span id="label" class="muted"></span>
       </div>
+
       <iframe id="viewer" src="" title="PDF"></iframe>
+
+      <div class="muted" style="margin-top: 10px;">
+        Si el visor no carga (a veces pasa en algunos celulares), usa “Abrir en nueva pestaña”.
+      </div>
     </main>
   </div>
 
   <script>
-    // Lista manual (por ahora). Luego la podemos automatizar.
+    // ✅ Ajustado a tus nombres EXACTOS (con tildes y guiones bajos)
+    // Asegúrate de que estos PDFs estén dentro de la carpeta /pdfs en el repo.
     const PDFS = [
-      { slug: "nota-ejemplo", title: "Nota de ejemplo", file: "pdfs/nota-ejemplo.pdf" },
+      { slug: "control-produccion", title: "Control de Producción", file: "pdfs/Control_de_Producción.pdf" },
+      { slug: "logistica", title: "Logística", file: "pdfs/Logística.pdf" },
+      { slug: "modelos-prob-1", title: "Modelos Probabilísticos — Primer Corte", file: "pdfs/Notas_Modelos_Probabilísticos_Primer_Corte.pdf" },
+      { slug: "simulacion-eventos", title: "Simulación de Eventos Discretos", file: "pdfs/Simulación_de_Eventos_Discretos.pdf" },
     ];
 
-    // Luego lo cambiamos por tu Worker real:
-    const WORKER_BASE = "https://TU_WORKER_SUBDOMINIO.workers.dev/d/";
+    // 🚧 Luego lo cambiaremos por tu Worker real (para notificación por descarga).
+    // Por ahora puedes dejarlo así: el botón Descargar abrirá el PDF directo (sin tracking).
+    const WORKER_BASE = ""; // ejemplo futuro: "https://TU_WORKER_SUBDOMINIO.workers.dev/d/";
 
     const list = document.getElementById("list");
     const viewer = document.getElementById("viewer");
     const download = document.getElementById("download");
     const open = document.getElementById("open");
     const label = document.getElementById("label");
+    const count = document.getElementById("count");
+
+    count.textContent = `${PDFS.length} PDFs`;
+
+    function setActive(slug) {
+      list.querySelectorAll("a").forEach(a => {
+        a.classList.toggle("active", a.getAttribute("data-slug") === slug);
+      });
+    }
 
     function select(pdf) {
       viewer.src = pdf.file;
       open.href = pdf.file;
-      download.href = WORKER_BASE + pdf.slug; // descarga trackeada (más adelante)
+
+      // Si WORKER_BASE está vacío, descarga directa. Si no, descarga trackeada.
+      download.href = WORKER_BASE ? (WORKER_BASE + pdf.slug) : pdf.file;
+
       label.textContent = pdf.title;
       history.replaceState(null, "", "#" + pdf.slug);
+      setActive(pdf.slug);
     }
 
     function renderList() {
-      list.innerHTML = PDFS.map(p => `<a href="#${p.slug}" data-slug="${p.slug}">${p.title}</a>`).join("");
+      list.innerHTML = PDFS.map(p =>
+        `<a href="#${p.slug}" data-slug="${p.slug}">${p.title}</a>`
+      ).join("");
+
       list.querySelectorAll("a").forEach(a => {
         a.addEventListener("click", (e) => {
           e.preventDefault();
@@ -79,6 +122,7 @@
     }
 
     renderList();
+
     const initialSlug = (location.hash || "").replace("#", "");
     const initial = PDFS.find(x => x.slug === initialSlug) || PDFS[0];
     select(initial);
