@@ -150,10 +150,7 @@
     ];
 
     // ✅ TRACKING por PDF (Worker)
-    // 1) Mientras NO tengas Worker, déjalo vacío y el botón abrirá el PDF directo.
-    // 2) Cuando crees el Worker, pega aquí la base, ej:
-    //    const TRACK_BASE = "https://notas-tracker.tuusuario.workers.dev";
-    const TRACK_BASE = "";
+    const TRACK_BASE = "https://bold-smoke-442f.juanessalamancab.workers.dev";
 
     const list = document.getElementById("list");
     const viewer = document.getElementById("viewer");
@@ -181,10 +178,8 @@
       // visor (no trackeado)
       viewer.src = pdf.file;
 
-      // botón (trackeado si hay Worker)
-      open.href = TRACK_BASE
-        ? `${TRACK_BASE}/d/${pdf.slug}?a=open`
-        : pdf.file;
+      // botón (trackeado por Worker)
+      open.href = `${TRACK_BASE}/d/${pdf.slug}?a=open`;
 
       label.textContent = pdf.title;
       history.replaceState(null, "", "#" + pdf.slug);
