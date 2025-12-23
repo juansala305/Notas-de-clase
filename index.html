@@ -81,7 +81,7 @@
       border: 1px solid rgba(0,0,0,0.08);
     }
 
-    iframe { width: 100%; height: calc(100vh - 180px); border: 1px solid #eee; border-radius: 14px; }
+    iframe { width: 100%; height: calc(100vh - 210px); border: 1px solid #eee; border-radius: 14px; }
 
     .muted { color: #666; font-size: 14px; }
 
@@ -121,7 +121,18 @@
           <span class="dot" aria-hidden="true"></span>
           Abrir en nueva pestaña
         </a>
+
+        <!-- ✅ NUEVO: buzón de sugerencias (Google Form) -->
+        <a id="feedback" class="btn" href="#" target="_blank" rel="noopener">
+          💬 Sugerencias/comentarios/errores
+        </a>
+
         <span id="label" class="muted"></span>
+      </div>
+
+      <!-- opcional: microtexto bajo la barra -->
+      <div class="muted" style="margin: 0 0 10px 2px;">
+        ¿Viste un typo o tienes una idea? Déjame una sugerencia (puede ser anónima).
       </div>
 
       <iframe id="viewer" src="" title="PDF"></iframe>
@@ -152,11 +163,15 @@
     // ✅ TRACKING por PDF (Worker)
     const TRACK_BASE = "https://bold-smoke-442f.juanessalamancab.workers.dev";
 
+    // ✅ NUEVO: URL de tu Google Form (pega aquí el link del form)
+    const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSczYFARsjXI6e1Ve4a1Wv1_OcfEI4qaWPzMIZ9nnA_cSivP7A/viewform?usp=header";
+
     const list = document.getElementById("list");
     const viewer = document.getElementById("viewer");
     const open = document.getElementById("open");
     const label = document.getElementById("label");
     const count = document.getElementById("count");
+    const feedback = document.getElementById("feedback");
 
     count.textContent = `${PDFS.length} PDFs`;
 
@@ -180,6 +195,11 @@
 
       // botón (trackeado por Worker)
       open.href = `${TRACK_BASE}/d/${pdf.slug}?a=open`;
+
+      // ✅ NUEVO: botón de sugerencias (manda materia + pdf pre-llenado en hash)
+      // Si NO quieres prefill, simplemente: feedback.href = FORM_URL;
+      // Para prefill, puedes usar #slug y tú mismo lo lees en el form a mano.
+      feedback.href = `${FORM_URL}#pdf=${encodeURIComponent(pdf.slug)}`;
 
       label.textContent = pdf.title;
       history.replaceState(null, "", "#" + pdf.slug);
