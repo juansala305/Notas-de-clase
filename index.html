@@ -7,8 +7,8 @@
 
   <style>
     :root{
-      --accent: #d6e4ff;     /* fallback */
-      --accent-bg: #f1f5ff;  /* fallback */
+      --accent: #d6e4ff;
+      --accent-bg: #f1f5ff;
     }
 
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; }
@@ -39,7 +39,6 @@
     nav a:hover { background: #f6f6f6; }
     nav a:active { transform: translateY(1px); }
 
-    /* Activo (usa variables --accent y --accent-bg definidas por materia) */
     nav a.active {
       background: var(--accent-bg);
       border-color: var(--accent);
@@ -122,7 +121,6 @@
           Abrir en nueva pestaña
         </a>
 
-        <!-- ✅ NUEVO: buzón de sugerencias (Google Form) -->
         <a id="feedback" class="btn" href="#" target="_blank" rel="noopener">
           💬 Sugerencias/comentarios/errores
         </a>
@@ -130,7 +128,6 @@
         <span id="label" class="muted"></span>
       </div>
 
-      <!-- opcional: microtexto bajo la barra -->
       <div class="muted" style="margin: 0 0 10px 2px;">
         ¿Viste un typo o tienes una idea? Déjame una sugerencia (puede ser anónima).
       </div>
@@ -144,26 +141,23 @@
   </div>
 
   <script>
-    // 🎨 Paleta por materia
     const COLORS = {
-      control:   { accent: "#ff8a3d", bg: "#fff1e7" }, // naranja
-      logistica: { accent: "#f4c430", bg: "#fff8d8" }, // amarillo
-      modelos:   { accent: "#3b82f6", bg: "#eaf2ff" }, // azul
-      simu:      { accent: "#ec4899", bg: "#ffe4f1" }, // rosado
+      control:   { accent: "#ff8a3d", bg: "#fff1e7" },
+      logistica: { accent: "#f4c430", bg: "#fff8d8" },
+      modelos:   { accent: "#3b82f6", bg: "#eaf2ff" },
+      simu:      { accent: "#ec4899", bg: "#ffe4f1" },
+      ics:       { accent: "#7c3aed", bg: "#f3e8ff" }
     };
 
-    // ✅ PDFs (ya renombrados)
     const PDFS = [
-      { slug: "control-produccion", title: "Control de Producción", materia: "control",  file: "./pdfs/control_de_produccion.pdf" },
-      { slug: "logistica",          title: "Logística",             materia: "logistica",file: "./pdfs/logistica.pdf" },
+      { slug: "control-produccion", title: "Control de Producción", materia: "control",   file: "./pdfs/control_de_produccion.pdf" },
+      { slug: "logistica",          title: "Logística",              materia: "logistica",file: "./pdfs/logistica.pdf" },
       { slug: "modelos-prob-1",     title: "Modelos Probabilísticos — Primer Corte", materia: "modelos", file: "./pdfs/notas_modelos_probabilisticos_primer_corte.pdf" },
       { slug: "simulacion-eventos", title: "Simulación de Eventos Discretos", materia: "simu", file: "./pdfs/simulacion_de_eventos_discretos.pdf" },
+      { slug: "ics",                title: "Ingeniería en la Cadena de Suministro (ICS)", materia: "ics", file: "./pdfs/ICS.pdf" }
     ];
 
-    // ✅ TRACKING por PDF (Worker)
     const TRACK_BASE = "https://bold-smoke-442f.juanessalamancab.workers.dev";
-
-    // ✅ NUEVO: URL de tu Google Form (pega aquí el link del form)
     const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSczYFARsjXI6e1Ve4a1Wv1_OcfEI4qaWPzMIZ9nnA_cSivP7A/viewform?usp=header";
 
     const list = document.getElementById("list");
@@ -189,18 +183,9 @@
 
     function select(pdf) {
       applyTheme(pdf.materia);
-
-      // visor (no trackeado)
       viewer.src = pdf.file;
-
-      // botón (trackeado por Worker)
       open.href = `${TRACK_BASE}/d/${pdf.slug}?a=open`;
-
-      // ✅ NUEVO: botón de sugerencias (manda materia + pdf pre-llenado en hash)
-      // Si NO quieres prefill, simplemente: feedback.href = FORM_URL;
-      // Para prefill, puedes usar #slug y tú mismo lo lees en el form a mano.
       feedback.href = `${FORM_URL}#pdf=${encodeURIComponent(pdf.slug)}`;
-
       label.textContent = pdf.title;
       history.replaceState(null, "", "#" + pdf.slug);
       setActive(pdf.slug);
@@ -230,9 +215,7 @@
     select(initial);
   </script>
 
-  <!-- Cloudflare Web Analytics -->
-  <script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
     data-cf-beacon='{"token":"c418a68a49b34c9684dc070e5178fc76"}'></script>
-  <!-- End Cloudflare Web Analytics -->
 </body>
 </html>
